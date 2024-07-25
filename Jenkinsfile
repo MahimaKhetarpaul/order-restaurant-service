@@ -27,7 +27,7 @@ pipeline {
 
     stage('SonarQube Analysis') {
   steps {
-    sh 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=http://15.236.186.247:9000/ -Dsonar.login=squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5'
+    sh 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=http://54.218.112.23:9000/ -Dsonar.login=squ_0690b7d6b7ef9f11ca6761efab9c573b4bd5c2b1'
   }
 }
 
@@ -35,8 +35,8 @@ pipeline {
    stage('Check code coverage') {
             steps {
                 script {
-                    def token = "squ_32789bcdadb6e4337e432d6cbc100c2a1a14fde5"
-                    def sonarQubeUrl = "http://15.236.186.247:9000/api"
+                    def token = "squ_0690b7d6b7ef9f11ca6761efab9c573b4bd5c2b1"
+                    def sonarQubeUrl = "http://54.218.112.23:9000/api"
                     def componentKey = "com.codedecode:order"
                     def coverageThreshold = 80.0
 
@@ -63,8 +63,8 @@ pipeline {
       stage('Docker Build and Push') {
       steps {
           sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-          sh 'docker build -t codedecode25/order-service:${VERSION} .'
-          sh 'docker push codedecode25/order-service:${VERSION}'
+          sh 'docker build -t mahimakhetarpaul/order-service:${VERSION} .'
+          sh 'docker push mahimakhetarpaul/order-service:${VERSION}'
       }
     } 
 
@@ -80,12 +80,12 @@ pipeline {
 
     stage('Update Image Tag in GitOps') {
       steps {
-         checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[ credentialsId: 'git-ssh', url: 'git@github.com:udemy-dev-withK8s-AWS-codedecode/deployment-folder.git']])
+         checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[ credentialsId: 'git-ssh', url: 'git@github.com:MahimaKhetarpaul/deployment-folder.git']])
         script {
        sh '''
-          sed -i "s/image:.*/image: codedecode25\\/order-service:${VERSION}/" aws/order-manifest.yml
+          sed -i "s/image:.*/image: mahimakhetarpaul\\/order-service:${VERSION}/" aws/order-manifest.yml
         '''
-          sh 'git checkout master'
+          sh 'git checkout main'
           sh 'git add .'
           sh 'git commit -m "Update image tag"'
         sshagent(['git-ssh'])
